@@ -1,1 +1,3 @@
 # SBT
+
+Smart Budget Tracker
