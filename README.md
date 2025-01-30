@@ -24,4 +24,3 @@ Real-Time Overspending Alerts – The system notifies users when they exceed the
 Automatic Transaction Categorization – Transactions are automatically sorted into relevant categories based on predefined rules, reducing manual input. Use OpenAI API
 Recurring Expense Tracking – Users can set up recurring payments (e.g., rent, subscriptions), ensuring they don’t miss essential payments.
 Data Export for Reporting – Users can download their financial data in formats like CSV, PDF, or JSON for further analysis and record-keeping.
-Responsive UI for Desktop & Mobile – The application is designed to work seamlessly across devices, providing an optimal experience on both desktop and mobile screens.
