@@ -17,7 +17,7 @@ namespace backend.Controllers
         [HttpGet]
         public IActionResult GetUsers()
         {
-            var allusers = db.Users.ToList();
+            var allusers = db.Transactions.ToList();
             return Ok(allusers);
         }
     }
