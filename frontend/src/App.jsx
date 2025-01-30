@@ -7,19 +7,36 @@ import BudgetOverview from "./components/BudgetOverview";
 
 const App = () => {
   const [transactions, setTransactions] = useState([]);
-  const [budget, setBudget] = useState(1000); // Default budget (adjust as needed)
+  const [budget, setBudget] = useState(1000); // Default budget
 
   const addTransaction = (transaction) => {
-    setTransactions([...transactions, transaction]);
+    const newTransaction = { ...transaction, date: new Date().toISOString() }; // Add current date
+    setTransactions([...transactions, newTransaction]);
+  };
+
+  const deleteTransaction = (index) => {
+    setTransactions(transactions.filter((_, i) => i !== index));
   };
 
   return (
     <Container className="mt-4">
       <h1 className="text-center mb-4">Smart Budget Tracker</h1>
-      <BudgetOverview budget={budget} transactions={transactions} />
-      <TransactionForm onAddTransaction={addTransaction} />
-      <TransactionList transactions={transactions} />
-      <SpendingChart transactions={transactions} />
+      
+      <div className="mb-3">
+        <BudgetOverview budget={budget} transactions={transactions} />
+      </div>
+
+      <div className="mb-3">
+        <TransactionForm onAddTransaction={addTransaction} />
+      </div>
+
+      <div className="mb-3">
+        <TransactionList transactions={transactions} onDeleteTransaction={deleteTransaction} />
+      </div>
+
+      <div className="mb-3">
+        <SpendingChart transactions={transactions} />
+      </div>
     </Container>
   );
 };
