@@ -5,6 +5,18 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/Budget": {
+      "get": {
+        "tags": [
+          "Budget"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/WeatherForecast": {
       "get": {
         "tags": [
