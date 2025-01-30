@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Card, Table, Form, Button } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Card, Table, Form, Button, Alert } from "react-bootstrap";
 
 const BudgetOverview = ({ transactions }) => {
   const categories = ["Groceries", "Dining", "Entertainment", "Rent", "Utilities", "Other"];
@@ -16,6 +16,9 @@ const BudgetOverview = ({ transactions }) => {
   const [isDisabled, setIsDisabled] = useState(
     categories.reduce((acc, category) => ({ ...acc, [category]: false }), {})
   );
+
+  // State to store overspending alerts
+  const [overspendingAlerts, setOverspendingAlerts] = useState([]);
 
   // Compute spending per category
   const categorySpending = categories.reduce((acc, category) => {
@@ -43,9 +46,27 @@ const BudgetOverview = ({ transactions }) => {
     setIsDisabled({ ...isDisabled, [category]: false }); // Enable input
   };
 
+  // Check for overspending and update alerts
+  useEffect(() => {
+    const newAlerts = categories
+      .filter((category) => categorySpending[category] > (categoryBudgets[category] || 0))
+      .map((category) => `⚠️ You have exceeded your budget for ${category}!`);
+    
+    setOverspendingAlerts(newAlerts);
+  }, [transactions, categoryBudgets]);
+
   return (
     <Card className="p-4 mt-3">
       <h2>Budget Overview</h2>
+
+      {/* Display Overspending Alerts */}
+      {overspendingAlerts.length > 0 && (
+        <Alert variant="danger">
+          {overspendingAlerts.map((alert, index) => (
+            <div key={index}>{alert}</div>
+          ))}
+        </Alert>
+      )}
 
       {/* Budget Input Form */}
       <Form className="mb-3">

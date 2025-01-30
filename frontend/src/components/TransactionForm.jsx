@@ -2,12 +2,14 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { Form, Button } from "react-bootstrap";
 
+const categories = ["Groceries", "Dining", "Entertainment", "Rent", "Utilities", "Other"];
+
 const TransactionForm = ({ onAddTransaction }) => {
   const { register, handleSubmit, reset } = useForm();
 
-  const onSubmit = async (data) => {
-    onAddTransaction(data);
-    reset(); // Clear form after submission
+  const onSubmit = (data) => {
+    onAddTransaction(data); // Add transaction with selected category
+    reset();
   };
 
   return (
@@ -26,6 +28,16 @@ const TransactionForm = ({ onAddTransaction }) => {
             {...register("amount", { required: true })}
             placeholder="Amount ($)"
           />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Select {...register("category", { required: true })}>
+            <option value="">Select Category</option>
+            {categories.map((category, index) => (
+              <option key={index} value={category}>
+                {category}
+              </option>
+            ))}
+          </Form.Select>
         </Form.Group>
         <Button type="submit" variant="primary" className="w-100">
           Add Transaction
