@@ -15,7 +15,6 @@ Infrastructure & Tools
 ASP.NET Core Web API – RESTful API backend
 React Router – Client-side navigation
 Axios – API requests
-Bootstrap / Tailwind CSS – Responsive UI styling
 
 Set Budgets – Users can define spending limits for different categories (e.g., food, rent, entertainment) to manage their finances effectively.
 Track Income and Expenses – Users can log transactions, categorize them, and view a historical record of their earnings and spending.
