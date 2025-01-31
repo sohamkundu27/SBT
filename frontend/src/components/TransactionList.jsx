@@ -60,6 +60,7 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
       <Table striped bordered hover>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Description</th>
             <th>Amount ($)</th>
             <th>Category</th>
@@ -75,6 +76,7 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
           ) : (
             transactions.map((txn, index) => (
               <tr key={index}>
+                <td>{txn.id}</td>
                 <td>{txn.description}</td>
                 <td className={txn.amount < 0 ? "text-danger" : "text-success"}>
                   ${txn.amount}
@@ -82,7 +84,7 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
                 <td>{txn.category}</td>
                 <td>{new Date(txn.date).toLocaleDateString()}</td>
                 <td>
-                  <Button variant="danger" size="sm" onClick={() => onDeleteTransaction(index)}>
+                  <Button variant="danger" size="sm" onClick={() => onDeleteTransaction(txn.id, index)}>
                     Delete
                   </Button>
                 </td>

@@ -4,6 +4,7 @@ import TransactionForm from "./components/TransactionForm";
 import TransactionList from "./components/TransactionList";
 import SpendingChart from "./components/SpendingChart";
 import BudgetOverview from "./components/BudgetOverview";
+import axios from 'axios'
 
 const App = () => {
   const [transactions, setTransactions] = useState([]);
@@ -11,11 +12,20 @@ const App = () => {
 
   const addTransaction = (transaction) => {
     const newTransaction = { ...transaction, date: new Date().toISOString() }; // Add current date
-    setTransactions([...transactions, newTransaction]);
+    setTransactions((prevTransactions) => [...prevTransactions, newTransaction]);
   };
 
-  const deleteTransaction = (index) => {
+  const deleteTransaction = async (id, index) => {
+    console.log(id);
+    const form = new FormData();
+    form.append("id", id);
+    const response = await axios.post("https://localhost:7224/api/delete", form);
+    console.log(response.data);
     setTransactions(transactions.filter((_, i) => i !== index));
+  };
+
+  const deleteAllTransaction = () => {
+    setTransactions([]);
   };
 
   return (
@@ -27,7 +37,7 @@ const App = () => {
       </div>
 
       <div className="mb-3">
-        <TransactionForm onAddTransaction={addTransaction} />
+        <TransactionForm transactions={transactions} onAddTransaction={addTransaction} onDeleteTransactions={deleteAllTransaction}/>
       </div>
 
       <div className="mb-3">
