@@ -48,51 +48,74 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
 
   return (
     <div className="card p-4 mt-3">
-      <h2 className="mb-3">Transaction History</h2>
+      <h2 className="mb-3 text-center">Transaction History</h2>
 
-      {/* Export Buttons */}
-      <div className="mb-3 d-flex gap-2">
+      {/* ✅ Centered Export Buttons */}
+      <div className="mb-3 d-flex justify-content-center gap-2">
         <Button variant="success" size="sm" onClick={exportToCSV}>Export CSV</Button>
         <Button variant="info" size="sm" onClick={exportToJSON}>Export JSON</Button>
         <Button variant="primary" size="sm" onClick={exportToPDF}>Export PDF</Button>
       </div>
 
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Description</th>
-            <th>Amount ($)</th>
-            <th>Category</th>
-            <th>Date Created</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.length === 0 ? (
+      {/* ✅ Responsive Table with Hardcoded Shrinking */}
+      <div style={{ overflowX: "auto" }}>
+        <Table
+          striped
+          bordered
+          hover
+          style={{
+            width: "100%",              // Full width by default
+            minWidth: "600px",           // Prevent shrinking too much
+            transition: "width 0.3s ease" // Smooth transition
+          }}
+          className="transaction-table"
+        >
+          <thead>
             <tr>
-              <td colSpan="5" className="text-center">No transactions yet.</td>
+              <th>Description</th>
+              <th>Amount ($)</th>
+              <th>Category</th>
+              <th>Date Created</th>
+              <th>Delete</th>
             </tr>
-          ) : (
-            transactions.map((txn, index) => (
-              <tr key={index}>
-                <td>{txn.id}</td>
-                <td>{txn.description}</td>
-                <td className={txn.amount < 0 ? "text-danger" : "text-success"}>
-                  ${txn.amount}
-                </td>
-                <td>{txn.category}</td>
-                <td>{new Date(txn.date).toLocaleDateString()}</td>
-                <td>
-                  <Button variant="danger" size="sm" onClick={() => onDeleteTransaction(txn.id, index)}>
-                    Delete
-                  </Button>
-                </td>
+          </thead>
+          <tbody>
+            {transactions.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="text-center">No transactions yet.</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
+            ) : (
+              transactions.map((txn, index) => (
+                <tr key={index}>
+                  <td className="text-truncate">{txn.description}</td>
+                  <td className={txn.amount < 0 ? "text-danger" : "text-success"}>
+                    ${txn.amount}
+                  </td>
+                  <td>{txn.category}</td>
+                  <td>{new Date(txn.date).toLocaleDateString()}</td>
+                  <td>
+                    <Button variant="danger" size="sm" onClick={() => onDeleteTransaction(txn.id, index)}>
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* ✅ CSS for Shrinking Effect */}
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .transaction-table {
+              width: 50% !important;   /* ✅ Shrinks to 50% when the screen is small */
+              min-width: 400px;        /* ✅ Prevents shrinking too much */
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

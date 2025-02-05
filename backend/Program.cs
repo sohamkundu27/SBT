@@ -1,23 +1,27 @@
-using backend.Data;
+using backend.Database;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Load connection string from appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DB_Connection");
 
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configure Entity Framework with MySQL
 builder.Services.AddDbContext<AppDBContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DB_Connection")));
+    options.UseMySql(builder.Configuration.GetConnectionString("DB_Connection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DB_Connection"))));
 
+
+// Enable CORS for React frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("SpecificOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173") // React frontend URL
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -25,7 +29,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -33,11 +37,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.UseCors("SpecificOrigins");
-
 app.MapControllers();
 
 app.Run();

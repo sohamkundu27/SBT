@@ -1,5 +1,5 @@
-﻿using backend.Data;
-using backend.Models.Entities;
+﻿using backend.Database;
+using backend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,46 +11,111 @@ namespace backend.Controllers
     public class BudgetController : ControllerBase
     {
         private readonly AppDBContext db;
+
         public BudgetController(AppDBContext db)
         {
             this.db = db;
         }
 
-        [HttpPost]
-        [Route("add")]
-        public async Task<IActionResult> saveToDatabase([FromForm] TransactionRequestForm form)
+        // ✅ Helper Method to Delete the Last Transaction
+        private async Task DeleteLastTransactionAsync()
         {
-            APICall call = new APICall();
-            string response = await call.GetChatResponseAsync(form.description);
-            var newTransaction = new Transaction { description = form.description, category = response, amount = Convert.ToDouble(form.amount), date = "hey" };
-            db.Transactions.Add(newTransaction);
-            db.SaveChanges();
-            var new_response = db.Transactions.ToList();
-            return Ok(new_response);
+            var lastTransaction = await db.Transactions.OrderByDescending(t => t.Id).FirstOrDefaultAsync();
+            if (lastTransaction != null)
+            {
+                db.Transactions.Remove(lastTransaction);
+                await db.SaveChangesAsync();
+                Console.WriteLine($"🗑️ Deleted last transaction with ID: {lastTransaction.Id}");
+            }
         }
 
+        // ✅ Add Transaction
+        [HttpPost]
+        [Route("add")]
+        public async Task<IActionResult> SaveToDatabase([FromForm] TransactionRequestForm form)
+        {
+            try
+            {
+                await DeleteLastTransactionAsync(); // ✅ Delete the last transaction before adding a new one
+
+                APICall call = new APICall();
+                string response = await call.GetChatResponseAsync(form.description);
+
+                var newTransaction = new Transaction
+                {
+                    Description = form.description,
+                    Category = response ?? "Uncategorized",
+                    Amount = Convert.ToDecimal(form.amount),
+                    Date = DateTime.UtcNow
+                };
+
+                db.Transactions.Add(newTransaction);
+                await db.SaveChangesAsync();
+
+                Console.WriteLine($"✅ Added new transaction with ID: {newTransaction.Id}");
+
+                return Ok(newTransaction); // ✅ Return only the newly added transaction
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error adding transaction: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
+        // ✅ Delete Transaction (Manually Triggered)
         [HttpPost]
         [Route("delete")]
-        public IActionResult deleteFromDatabase([FromForm] int id)
+        public async Task<IActionResult> DeleteFromDatabase([FromForm] int id)
         {
-            var transaction = db.Transactions.Find(id);
-            if (transaction != null)
+            try
             {
-                db.Transactions.Remove(transaction);
-                db.SaveChanges();
-                var new_response = db.Transactions.ToList();
-                return Ok(new_response);
+                var transaction = await db.Transactions.FindAsync(id);
+                if (transaction != null)
+                {
+                    db.Transactions.Remove(transaction);
+                    await db.SaveChangesAsync();
+
+                    Console.WriteLine($"✅ Transaction with ID {id} deleted.");
+
+                    var updatedTransactions = db.Transactions.OrderBy(t => t.Id).ToList();
+                    return Ok(updatedTransactions);
+                }
+                else
+                {
+                    Console.WriteLine($"⚠️ Transaction with ID {id} not found.");
+                    return NotFound("Transaction not found.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound("Transaction not found.");
+                Console.WriteLine($"❌ Error deleting transaction: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
+        // ✅ Fetch All Transactions
+        [HttpGet]
+        [Route("get-all")]
+        public IActionResult GetAllTransactions()
+        {
+            try
+            {
+                var transactions = db.Transactions.OrderBy(t => t.Id).ToList();
+                Console.WriteLine("📥 Fetched all transactions from the database.");
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error fetching transactions: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
     }
 
     public class TransactionRequestForm
     {
-        public string description { get; set; }
-        public string amount { get; set; }
+        public required string description { get; set; }
+        public required string amount { get; set; }
     }
 }
