@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button } from "react-bootstrap";
 import axios from "axios";
+import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap Icons
 
 const RecurringTransactionList = () => {
   const [recurringTransactions, setRecurringTransactions] = useState([]);
@@ -13,7 +14,12 @@ const RecurringTransactionList = () => {
   const fetchRecurringTransactions = async () => {
     try {
       const response = await axios.get("http://localhost:5054/api/recurring/get-all");
-      setRecurringTransactions(response.data);
+      const transactionsWithIds = response.data.map((txn) => ({
+        ...txn,
+        id: txn.id || Date.now() + Math.random(), // Ensure unique ID
+      }));
+      setRecurringTransactions(transactionsWithIds);
+      console.log("📥 Recurring Transactions loaded:", transactionsWithIds);
     } catch (error) {
       console.error("❌ Error fetching recurring transactions:", error);
     }
@@ -25,16 +31,29 @@ const RecurringTransactionList = () => {
       const form = new FormData();
       form.append("id", id);
 
-      const response = await axios.post("http://localhost:5054/api/recurring/delete", form);
-      setRecurringTransactions(response.data); // ✅ Update the list after deletion
+      await axios.post("http://localhost:5054/api/recurring/delete", form);
+      setRecurringTransactions((prev) => prev.filter((txn) => txn.id !== id));
+      console.log(`✅ Deleted recurring transaction with ID: ${id}`);
     } catch (error) {
       console.error("❌ Error deleting recurring transaction:", error);
     }
   };
 
+  // ✅ Refresh Page
+  const refreshPage = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="card p-4 mt-3">
-      <h2 className="text-center">Recurring Transactions</h2>
+      {/* ✅ Title with Refresh Button on the Right */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="mb-0">Recurring Transactions</h2>
+        <Button variant="outline-secondary" size="sm" onClick={refreshPage} title="Refresh">
+          <i className="bi bi-arrow-clockwise"></i> {/* Bootstrap refresh icon */}
+        </Button>
+      </div>
+
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -58,7 +77,7 @@ const RecurringTransactionList = () => {
                 <td>${txn.amount.toFixed(2)}</td>
                 <td>{txn.category}</td>
                 <td>{txn.frequency}</td>
-                <td>{new Date(txn.dateCreated).toLocaleDateString()}</td>
+                <td>{txn.dateCreated ? new Date(txn.dateCreated).toLocaleDateString() : "N/A"}</td>
                 <td>
                   <Button variant="danger" size="sm" onClick={() => deleteRecurringTransaction(txn.id)}>
                     Delete

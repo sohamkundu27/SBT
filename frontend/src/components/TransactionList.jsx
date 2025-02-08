@@ -1,15 +1,21 @@
 import React from "react";
 import { Table, Button } from "react-bootstrap";
-import { saveAs } from "file-saver"; // For exporting files
-import jsPDF from "jspdf"; // For PDF generation
-import "jspdf-autotable"; // For table formatting in PDF
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 const TransactionList = ({ transactions, onDeleteTransaction }) => {
   
+  // Refresh the page
+  const refreshPage = () => {
+    window.location.reload();
+  };
+
   // Export transactions as CSV
   const exportToCSV = () => {
     const csvContent = [
-      ["Description", "Amount ($)", "Category", "Date Created"], // CSV Headers
+      ["Description", "Amount ($)", "Category", "Date Created"],
       ...transactions.map(txn => [
         txn.description,
         txn.amount,
@@ -48,7 +54,13 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
 
   return (
     <div className="card p-4 mt-3">
-      <h2 className="mb-3 text-center">Transaction History</h2>
+      {/* ✅ Title with Refresh Button on the Right */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="mb-0">Transaction History</h2>
+        <Button variant="outline-secondary" size="sm" onClick={refreshPage} title="Refresh">
+          <i className="bi bi-arrow-clockwise"></i> {/* Bootstrap refresh icon */}
+        </Button>
+      </div>
 
       {/* ✅ Centered Export Buttons */}
       <div className="mb-3 d-flex justify-content-center gap-2">
@@ -57,19 +69,9 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
         <Button variant="primary" size="sm" onClick={exportToPDF}>Export PDF</Button>
       </div>
 
-      {/* ✅ Responsive Table with Hardcoded Shrinking */}
+      {/* ✅ Responsive Table */}
       <div style={{ overflowX: "auto" }}>
-        <Table
-          striped
-          bordered
-          hover
-          style={{
-            width: "100%",              // Full width by default
-            minWidth: "600px",           // Prevent shrinking too much
-            transition: "width 0.3s ease" // Smooth transition
-          }}
-          className="transaction-table"
-        >
+        <Table striped bordered hover>
           <thead>
             <tr>
               <th>Description</th>
@@ -85,16 +87,16 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
                 <td colSpan="5" className="text-center">No transactions yet.</td>
               </tr>
             ) : (
-              transactions.map((txn, index) => (
-                <tr key={index}>
-                  <td className="text-truncate">{txn.description}</td>
+              transactions.map((txn) => (
+                <tr key={txn.id || Math.random()}>
+                  <td>{txn.description}</td>
                   <td className={txn.amount < 0 ? "text-danger" : "text-success"}>
                     ${txn.amount}
                   </td>
                   <td>{txn.category}</td>
                   <td>{new Date(txn.date).toLocaleDateString()}</td>
                   <td>
-                    <Button variant="danger" size="sm" onClick={() => onDeleteTransaction(txn.id, index)}>
+                    <Button variant="danger" size="sm" onClick={() => onDeleteTransaction(txn.id)}>
                       Delete
                     </Button>
                   </td>
@@ -104,18 +106,6 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
           </tbody>
         </Table>
       </div>
-
-      {/* ✅ CSS for Shrinking Effect */}
-      <style>
-        {`
-          @media (max-width: 768px) {
-            .transaction-table {
-              width: 50% !important;   /* ✅ Shrinks to 50% when the screen is small */
-              min-width: 400px;        /* ✅ Prevents shrinking too much */
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };

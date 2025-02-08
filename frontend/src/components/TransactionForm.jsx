@@ -75,11 +75,11 @@ const TransactionForm = ({ transactions, onAddTransaction, onDeleteTransactions 
         {isRecurring && (
           <Form.Group className="mb-3">
             <Form.Label>Frequency</Form.Label>
-            <Form.Select {...register("frequency")} defaultValue="monthly">
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
+            <Form.Select {...register("frequency")} defaultValue="Monthly">
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Yearly">Yearly</option>
             </Form.Select>
           </Form.Group>
         )}

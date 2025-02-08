@@ -9,7 +9,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Card, Table } from "react-bootstrap";
+import { Card, Table, Button } from "react-bootstrap";
+import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap Icons
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -25,7 +26,7 @@ const SpendingChart = ({ transactions }) => {
     "rgba(201, 203, 207, 0.6)", // Other
   ];
 
-  // ✅ Calculate total spending per category
+  // ✅ Only use `transactions` (not `recurringTransactions`) to avoid double counting
   const categoryTotals = categories.map((category) =>
     transactions
       .filter((txn) => txn.category === category)
@@ -46,15 +47,27 @@ const SpendingChart = ({ transactions }) => {
       {
         label: "Spending ($)",
         data: categoryTotals,
-        backgroundColor: colors, // ✅ Apply distinct colors
-        borderRadius: 5,          // ✅ Rounded bar edges
+        backgroundColor: colors,
+        borderRadius: 5,
       },
     ],
   };
 
+  // ✅ Refresh Page
+  const refreshPage = () => {
+    window.location.reload();
+  };
+
   return (
     <Card className="p-4 mt-3 shadow-sm rounded">
-      <h2 className="text-center mb-4">📊 Spending Trends</h2>
+      {/* ✅ Title with Refresh Button on the Right */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="mb-0">📊 Spending Trends</h2>
+        <Button variant="outline-secondary" size="sm" onClick={refreshPage} title="Refresh">
+          <i className="bi bi-arrow-clockwise"></i> {/* Bootstrap refresh icon */}
+        </Button>
+      </div>
+
       <Bar data={data} />
 
       {/* ✅ Responsive Spending Table with Horizontal Scroll */}
