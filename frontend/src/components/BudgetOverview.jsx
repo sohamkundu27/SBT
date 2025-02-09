@@ -1,17 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { Card, Accordion, Form, Button, Alert, Row, Col } from "react-bootstrap";
+import axios from "axios";
 
 const BudgetOverview = ({ transactions }) => {
   const categories = ["Groceries", "Dining", "Entertainment", "Rent", "Utilities", "Other"];
 
-  const [categoryBudgets, setCategoryBudgets] = useState(
-    categories.reduce((acc, category) => ({ ...acc, [category]: 100 }), {})
-  );
-  const [inputValues, setInputValues] = useState({ ...categoryBudgets });
-  const [isDisabled, setIsDisabled] = useState(
-    categories.reduce((acc, category) => ({ ...acc, [category]: false }), {})
-  );
+  const [categoryBudgets, setCategoryBudgets] = useState({});
+  const [inputValues, setInputValues] = useState({});
+  const [isDisabled, setIsDisabled] = useState({});
   const [overspendingAlerts, setOverspendingAlerts] = useState([]);
+
+  // ✅ Fetch budgets from the database on page load
+  useEffect(() => {
+    fetchBudgets();
+  }, []);
+
+  const fetchBudgets = async () => {
+    try {
+      const response = await axios.get("http://localhost:5054/api/budget/get-all");
+      const budgets = response.data;
+
+      const budgetMap = categories.reduce((acc, category) => {
+        const matchingBudget = budgets.find((b) => b.category === category);
+        acc[category] = matchingBudget ? matchingBudget.amount : 100; // Default to 100 if not set
+        return acc;
+      }, {});
+
+      setCategoryBudgets(budgetMap);
+      setInputValues(budgetMap);
+      setIsDisabled(
+        categories.reduce((acc, category) => ({ ...acc, [category]: !!budgetMap[category] }), {})
+      );
+    } catch (error) {
+      console.error("❌ Error fetching budgets:", error);
+    }
+  };
 
   // ✅ Calculate total spending per category
   const categorySpending = categories.reduce((acc, category) => {
@@ -25,22 +48,57 @@ const BudgetOverview = ({ transactions }) => {
     setInputValues({ ...inputValues, [category]: parseFloat(value) || 0 });
   };
 
-  const handleSetBudget = (category) => {
-    setCategoryBudgets({ ...categoryBudgets, [category]: inputValues[category] });
-    setIsDisabled({ ...isDisabled, [category]: true });
-  };
+  // ✅ Update budget in database and disable input field
+  const handleSetBudget = async (category) => {
+    try {
+        const amount = inputValues[category];
 
-  const handleResetBudget = (category) => {
-    setCategoryBudgets({ ...categoryBudgets, [category]: 100 });
-    setInputValues({ ...inputValues, [category]: 100 });
-    setIsDisabled({ ...isDisabled, [category]: false });
-  };
+        console.log(`📤 Sending Budget Update: ${category} ${amount}`);
 
-  const handleClearBudget = (category) => {
-    setCategoryBudgets({ ...categoryBudgets, [category]: 0 });
-    setInputValues({ ...inputValues, [category]: 0 });
-    setIsDisabled({ ...isDisabled, [category]: false });
-  };
+        await axios.post(
+            "http://localhost:5054/api/budget/update",
+            JSON.stringify({ category, amount }), // ✅ Send JSON
+            {
+                headers: {
+                    "Content-Type": "application/json", // ✅ Explicitly set content type
+                },
+            }
+        );
+
+        setCategoryBudgets({ ...categoryBudgets, [category]: amount });
+        setIsDisabled({ ...isDisabled, [category]: true });
+
+        console.log(`✅ Budget updated for ${category}: $${amount}`);
+    } catch (error) {
+        console.error("❌ Error updating budget:", error);
+    }
+};
+
+const handleResetBudget = async (category) => {
+    try {
+        console.log(`🔄 Resetting Budget: ${category}`);
+
+        await axios.post(
+            "http://localhost:5054/api/budget/update",
+            JSON.stringify({ category, amount: 0 }), // ✅ Reset amount to 0
+            {
+                headers: {
+                    "Content-Type": "application/json", // ✅ Explicitly set content type
+                },
+            }
+        );
+
+        setCategoryBudgets({ ...categoryBudgets, [category]: 0 });
+        setInputValues({ ...inputValues, [category]: 0 });
+        setIsDisabled({ ...isDisabled, [category]: false });
+
+        console.log(`✅ Budget reset for ${category}`);
+    } catch (error) {
+        console.error("❌ Error resetting budget:", error);
+    }
+};
+
+  
 
   // ✅ Alert for overspending
   useEffect(() => {
@@ -101,32 +159,17 @@ const BudgetOverview = ({ transactions }) => {
                   >
                     Reset
                   </Button>
-                  <Button
-                    variant="warning"
-                    size="sm"
-                    onClick={() => handleClearBudget(category)}
-                  >
-                    Clear
-                  </Button>
                 </div>
 
                 <div className="mt-3 text-center">
                   <strong>Budget:</strong> ${budget.toFixed(2)} <br />
                   <strong>Spent:</strong>{" "}
-                  <span
-                    className={`px-2 py-1 rounded ${
-                      spent > budget ? "bg-danger" : "bg-success"
-                    } text-white`}
-                  >
+                  <span className={`px-2 py-1 rounded ${spent > budget ? "bg-danger" : "bg-success"} text-white`}>
                     ${spent.toFixed(2)}
                   </span>{" "}
                   <br />
                   <strong>Remaining:</strong>{" "}
-                  <span
-                    className={`px-2 py-1 rounded ${
-                      remaining < 0 ? "bg-danger" : "bg-success"
-                    } text-white`}
-                  >
+                  <span className={`px-2 py-1 rounded ${remaining < 0 ? "bg-danger" : "bg-success"} text-white`}>
                     ${remaining.toFixed(2)}
                   </span>
                 </div>
@@ -164,47 +207,21 @@ const BudgetOverview = ({ transactions }) => {
                   />
                 </Col>
                 <Col md={2}>
-                  <div
-                    className={`px-2 py-1 rounded ${
-                      spent > budget ? "bg-danger" : "bg-success"
-                    } text-white`}
-                  >
+                  <div className={`px-2 py-1 rounded ${spent > budget ? "bg-danger" : "bg-success"} text-white`}>
                     ${spent.toFixed(2)}
                   </div>
                 </Col>
                 <Col md={2}>
-                  <div
-                    className={`px-2 py-1 rounded ${
-                      remaining < 0 ? "bg-danger" : "bg-success"
-                    } text-white`}
-                  >
+                  <div className={`px-2 py-1 rounded ${remaining < 0 ? "bg-danger" : "bg-success"} text-white`}>
                     ${remaining.toFixed(2)}
                   </div>
                 </Col>
                 <Col md={2}>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={() => handleSetBudget(category)}
-                    disabled={isDisabled[category]}
-                    className="me-2"
-                  >
+                  <Button variant="success" size="sm" onClick={() => handleSetBudget(category)} disabled={isDisabled[category]}>
                     Set
                   </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleResetBudget(category)}
-                    className="me-2"
-                  >
+                  <Button variant="danger" size="sm" onClick={() => handleResetBudget(category)}>
                     Reset
-                  </Button>
-                  <Button
-                    variant="warning"
-                    size="sm"
-                    onClick={() => handleClearBudget(category)}
-                  >
-                    Clear
                   </Button>
                 </Col>
               </Row>

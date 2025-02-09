@@ -90,8 +90,8 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
               transactions.map((txn) => (
                 <tr key={txn.id || Math.random()}>
                   <td>{txn.description}</td>
-                  <td className={txn.amount < 0 ? "text-danger" : "text-success"}>
-                    ${txn.amount}
+                  <td className={txn.amount < 0 ? "text-danger" : "black"}>
+                    ${parseFloat(txn.amount).toFixed(2)}
                   </td>
                   <td>{txn.category}</td>
                   <td>{new Date(txn.date).toLocaleDateString()}</td>

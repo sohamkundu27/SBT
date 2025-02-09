@@ -59,10 +59,20 @@ const TransactionForm = ({ transactions, onAddTransaction, onDeleteTransactions 
           <Form.Control
             type="number"
             step="0.01"
-            {...register("amount", { required: true })}
+            min="0"  // ✅ Prevents negative values
+            {...register("amount", { 
+              required: true, 
+              min: { value: 0, message: "Amount must be positive" }  // ✅ Validation rule
+            })}
             placeholder="Amount (0.00)"
+            onKeyDown={(e) => {
+              if (e.key === "-" || e.key === "e") {
+                e.preventDefault(); // ✅ Stops negative or exponent notation input
+              }
+            }}
           />
-        </Form.Group>
+      </Form.Group>
+
 
         <Form.Check
           type="checkbox"

@@ -1,44 +1,51 @@
 using backend.Database;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load connection string from appsettings.json
+// ✅ Fix: Ensure correct connection string name
 var connectionString = builder.Configuration.GetConnectionString("DB_Connection");
 
-// Add services to the container
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Configure Entity Framework with MySQL
-builder.Services.AddDbContext<AppDBContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DB_Connection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DB_Connection"))));
-
-
-// Enable CORS for React frontend
+// ✅ Allow CORS for React frontend
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("SpecificOrigins", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173") // React frontend URL
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowAllOrigins",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
 });
+
+// ✅ Use Pomelo MySQL (Fix MySQL version mismatch)
+builder.Services.AddDbContext<AppDBContext>(options =>
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString) // ✅ Automatically detect MySQL version
+    ));
+
+// ✅ Add Controllers
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// ✅ Fix: CORS must come before Routing
+app.UseCors("AllowAllOrigins");
 
-app.UseHttpsRedirection();
+app.UseRouting();
 app.UseAuthorization();
-app.UseCors("SpecificOrigins");
+
+// ✅ Enable Controllers
 app.MapControllers();
+
+// ✅ Default Route (API Health Check)
+app.MapGet("/", () => Results.Ok("Smart Budget Tracker API is running 🚀"));
 
 app.Run();
