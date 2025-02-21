@@ -1,12 +1,14 @@
 using backend.Database;
 using backend.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration; // ✅ Required for config
 
 namespace backend.Controllers
 {
-
     //this is the endpoint
     [Route("/api/recurring")]
     [ApiController]
@@ -14,25 +16,28 @@ namespace backend.Controllers
     public class RecurringTransactionController : ControllerBase
     {
         private readonly AppDBContext db;
-        //local use of AppDBContext db
-        public RecurringTransactionController(AppDBContext db)
+        private readonly APICall apiCall; // ✅ Added APICall instance
+
+        // ✅ Inject DB Context & Configuration
+        public RecurringTransactionController(AppDBContext context, IConfiguration configuration)
         {
-            this.db = db;
+            db = context;
+            apiCall = new APICall(configuration); // ✅ Initialize APICall with API Key
         }
 
         // Http get to fetch all recurring transactions from the DB
         [HttpGet("get-all")]
-        public IActionResult GetAllRecurringTransactions()
+        public async Task<IActionResult> GetAllRecurringTransactions()
         {
             try
             {
-                var recurringTransactions = db.RecurringTransactions.OrderBy(t => t.Id).ToList();
+                var recurringTransactions = await db.RecurringTransactions.OrderBy(t => t.Id).ToListAsync();
                 return Ok(recurringTransactions);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error fetching recurring transactions: {ex.Message}");
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
 
@@ -42,9 +47,13 @@ namespace backend.Controllers
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(form.description) || string.IsNullOrWhiteSpace(form.amount) || string.IsNullOrWhiteSpace(form.frequency))
+                {
+                    return BadRequest(new { message = "Description, Amount, and Frequency are required." });
+                }
+
                 // Get category from OpenAI API
-                APICall call = new APICall();
-                string categoryResponse = await call.GetChatResponseAsync(form.description);
+                string categoryResponse = await apiCall.GetChatResponseAsync(form.description);
 
                 // Add to Recurring Transactions Table. Use the model
                 var newRecurringTransaction = new RecurringTransaction
@@ -58,7 +67,7 @@ namespace backend.Controllers
 
                 db.RecurringTransactions.Add(newRecurringTransaction);
 
-                // Add to Normal Transactions Table as well. use the model
+                // Add to Normal Transactions Table as well. Use the model
                 var newTransaction = new Transaction
                 {
                     Description = form.description,
@@ -68,17 +77,16 @@ namespace backend.Controllers
                 };
 
                 db.Transactions.Add(newTransaction);
-
                 await db.SaveChangesAsync();
 
-                var updatedList = db.RecurringTransactions.OrderBy(t => t.Id).ToList();
+                var updatedList = await db.RecurringTransactions.OrderBy(t => t.Id).ToListAsync();
                 //return as JSON
                 return Ok(updatedList);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error adding recurring transaction: {ex.Message}");
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
 
@@ -89,28 +97,26 @@ namespace backend.Controllers
             try
             {
                 var transaction = await db.RecurringTransactions.FindAsync(id);
-                if (transaction != null)
+                if (transaction == null)
                 {
-                    db.RecurringTransactions.Remove(transaction);
-                    await db.SaveChangesAsync();
+                    return NotFound(new { message = "Recurring Transaction not found." });
+                }
 
-                    var updatedList = db.RecurringTransactions.OrderBy(t => t.Id).ToList();
-                    return Ok(updatedList);
-                }
-                else
-                {
-                    return NotFound("Recurring Transaction not found.");
-                }
+                db.RecurringTransactions.Remove(transaction);
+                await db.SaveChangesAsync();
+
+                var updatedList = await db.RecurringTransactions.OrderBy(t => t.Id).ToListAsync();
+                return Ok(updatedList);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error deleting recurring transaction: {ex.Message}");
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
     }
-    //helps automatically parse data from the frontend
 
+    //helps automatically parse data from the frontend
     public class RecurringTransactionForm
     {
         public required string description { get; set; }

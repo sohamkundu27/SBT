@@ -11,10 +11,10 @@ namespace backend
         private readonly HttpClient http;
         private readonly string apiKey;
 
-        public APICall()
+        public APICall(IConfiguration configuration)
         {
             http = new HttpClient();
-            apiKey = "sk-proj-";
+            apiKey = configuration["OpenAI:ApiKey"] ?? "";
         }
         //this function is called everytime 
         public async Task<string> GetChatResponseAsync(string prompt)
@@ -43,11 +43,12 @@ namespace backend
             Console.WriteLine(responseBody); // Debug output
             //extract transaction category
             using var jsonDoc = JsonDocument.Parse(responseBody);
+            //if its ever null then we can return a empty string
             return jsonDoc.RootElement
                           .GetProperty("choices")[0]
                           .GetProperty("message")
                           .GetProperty("content")
-                          .GetString();
+                          .GetString() ?? string.Empty;
         }
     }
 }

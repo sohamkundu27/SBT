@@ -5,6 +5,7 @@ using backend.Database;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration; // ✅ Required for config
 
 namespace backend.Controllers
 {
@@ -14,12 +15,15 @@ namespace backend.Controllers
     public class BudgetController : ControllerBase
     {
         private readonly AppDBContext db;
-        //initialize the db so we can use it locally
+        private readonly APICall apiCall; // ✅ Added APICall instance
 
-        public BudgetController(AppDBContext context)
+        // ✅ Inject DB Context & Configuration
+        public BudgetController(AppDBContext context, IConfiguration configuration)
         {
             db = context;
+            apiCall = new APICall(configuration); // ✅ Initialize APICall with API Key
         }
+
         //gets everything from the DB
         [HttpGet]
         [Route("get-all")]
@@ -34,9 +38,10 @@ namespace backend.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error fetching transactions: {ex.Message}");
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
+
         //add a transaction
         [HttpPost]
         [Route("add")]
@@ -44,15 +49,19 @@ namespace backend.Controllers
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(form.Description) || string.IsNullOrWhiteSpace(form.Amount))
+                {
+                    return BadRequest(new { message = "Description and Amount are required." });
+                }
+
                 //automatically categorization
-                APICall call = new APICall();
-                string response = await call.GetChatResponseAsync(form.description);
+                string category = await apiCall.GetChatResponseAsync(form.Description);
                 //make the new object with the model
                 var newTransaction = new Transaction
                 {
-                    Description = form.description,
-                    Category = response ?? "Uncategorized",
-                    Amount = Convert.ToDecimal(form.amount),
+                    Description = form.Description,
+                    Category = category ?? "Uncategorized",
+                    Amount = Convert.ToDecimal(form.Amount),
                     Date = DateTime.UtcNow
                 };
 
@@ -66,7 +75,7 @@ namespace backend.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error adding transaction: {ex.Message}");
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
 
@@ -79,7 +88,7 @@ namespace backend.Controllers
                 var transaction = await db.Transactions.FindAsync(id);
                 if (transaction == null)
                 {
-                    return NotFound($"Transaction with ID {id} not found.");
+                    return NotFound(new { message = $"Transaction with ID {id} not found." });
                 }
 
                 db.Transactions.Remove(transaction);
@@ -87,19 +96,20 @@ namespace backend.Controllers
 
                 Console.WriteLine($"✅ Deleted transaction with ID: {id}");
                 //returning it as JSON
-                return Ok($"Transaction with ID {id} deleted.");
+                return Ok(new { message = $"Transaction with ID {id} deleted." });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error deleting transaction: {ex.Message}");
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
     }
+
     //helps automatically parse data from the frontend
     public class TransactionRequestForm
     {
-        public string description { get; set; }
-        public string amount { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Amount { get; set; } = string.Empty;
     }
 }

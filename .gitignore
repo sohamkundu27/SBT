@@ -9,3 +9,4 @@ obj/
 
 # Ignore other generated files
 *.json
+backend/appsettings.json
