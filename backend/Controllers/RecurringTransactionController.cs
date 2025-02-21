@@ -36,7 +36,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error fetching recurring transactions: {ex.Message}");
+                Console.WriteLine($"Error fetching recurring transactions: {ex.Message}");
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }

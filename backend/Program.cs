@@ -28,10 +28,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseMySql(
         connectionString,
-        ServerVersion.AutoDetect(connectionString) // ✅ Automatically detect MySQL version
+        ServerVersion.AutoDetect(connectionString) // Automatically detect MySQL version
     ));
 
-// ✅ Add Controllers
+// Add Controllers
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -46,6 +46,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Default Route (API Health Check)
-app.MapGet("/", () => Results.Ok("Smart Budget Tracker API is running 🚀"));
+app.MapGet("/", () => Results.Ok("Smart Budget Tracker API is running"));
 
 app.Run();

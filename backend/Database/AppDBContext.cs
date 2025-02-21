@@ -42,7 +42,7 @@ namespace backend.Database
                 entity.Property(e => e.Category).HasColumnName("category");
                 entity.Property(e => e.Frequency).HasColumnName("frequency"); // daily, weekly, monthly, yearly
 
-                // Fix default timestamp value for 'date_created'
+                //Fix default timestamp value for 'date_created'
                 entity.Property(e => e.DateCreated)
                       .HasColumnName("date_created")
                       .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");

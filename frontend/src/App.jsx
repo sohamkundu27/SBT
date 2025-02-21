@@ -86,7 +86,7 @@ const App = () => {
             console.log("Deleted duplicate transaction:", mostRecentTransaction);
         }
 
-        window.location.reload(); // refresh
+        window.location.reload(); 
     } catch (error) {
         console.error("Error adding or deleting transaction:", error);
     }
