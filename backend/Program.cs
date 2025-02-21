@@ -9,10 +9,10 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Fix: Ensure correct connection string name
+// get the connection string from the appsetting.json, then we pass it on to the AppDBContext
 var connectionString = builder.Configuration.GetConnectionString("DB_Connection");
 
-// ✅ Allow CORS for React frontend
+// Allow Cross Origin Resource Sharing (CORS) for React frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-// ✅ Use Pomelo MySQL (Fix MySQL version mismatch)
+// Use Pomelo MySQL (Fix MySQL version mismatch)
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseMySql(
         connectionString,
@@ -36,16 +36,16 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// ✅ Fix: CORS must come before Routing
+// CORS must come before Routing
 app.UseCors("AllowAllOrigins");
 
 app.UseRouting();
 app.UseAuthorization();
 
-// ✅ Enable Controllers
+// Enable Controllers
 app.MapControllers();
 
-// ✅ Default Route (API Health Check)
+// Default Route (API Health Check)
 app.MapGet("/", () => Results.Ok("Smart Budget Tracker API is running 🚀"));
 
 app.Run();

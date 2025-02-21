@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Models;
-using backend.Database; // ✅ This is missing!
+using backend.Database;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,19 +10,22 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api")]
+    //We inherit the HTTP methods from the ControllerBase class. Make Budget Controller class to make all the methods in.
     public class BudgetController : ControllerBase
     {
         private readonly AppDBContext db;
+        //initialize the db so we can use it locally
 
         public BudgetController(AppDBContext context)
         {
             db = context;
         }
-
+        //gets everything from the DB
         [HttpGet]
         [Route("get-all")]
         public async Task<IActionResult> GetAllTransactions()
         {
+            //get the full transaction list
             try
             {
                 var transactions = await db.Transactions.ToListAsync();
@@ -34,16 +37,17 @@ namespace backend.Controllers
                 return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
-
+        //add a transaction
         [HttpPost]
         [Route("add")]
         public async Task<IActionResult> SaveToDatabase([FromForm] TransactionRequestForm form)
         {
             try
             {
+                //automatically categorization
                 APICall call = new APICall();
                 string response = await call.GetChatResponseAsync(form.description);
-
+                //make the new object with the model
                 var newTransaction = new Transaction
                 {
                     Description = form.description,
@@ -56,7 +60,7 @@ namespace backend.Controllers
                 await db.SaveChangesAsync();
 
                 Console.WriteLine($"✅ Added new transaction with ID: {newTransaction.Id}");
-
+                //returning it as JSON
                 return Ok(newTransaction);
             }
             catch (Exception ex)
@@ -82,7 +86,7 @@ namespace backend.Controllers
                 await db.SaveChangesAsync();
 
                 Console.WriteLine($"✅ Deleted transaction with ID: {id}");
-
+                //returning it as JSON
                 return Ok($"Transaction with ID {id} deleted.");
             }
             catch (Exception ex)
@@ -92,7 +96,7 @@ namespace backend.Controllers
             }
         }
     }
-
+    //helps automatically parse data from the frontend
     public class TransactionRequestForm
     {
         public string description { get; set; }

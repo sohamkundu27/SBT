@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Models
 {
+    //matches the recurring_transaction table
     [Table("recurring_transactions")]
     public class RecurringTransaction
     {

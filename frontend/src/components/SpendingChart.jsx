@@ -26,17 +26,17 @@ const SpendingChart = ({ transactions }) => {
     "rgba(201, 203, 207, 0.6)", // Other
   ];
 
-  // ✅ Only use `transactions` (not `recurringTransactions`) to avoid double counting
+  // Only use `transactions` (not `recurringTransactions`) to avoid double counting
   const categoryTotals = categories.map((category) =>
     transactions
       .filter((txn) => txn.category === category)
       .reduce((acc, txn) => acc + parseFloat(txn.amount), 0)
   );
 
-  // ✅ Calculate total spending
+  // Calculate total spending, use reduce to iterate through each and make one value
   const totalSpent = categoryTotals.reduce((acc, amount) => acc + amount, 0);
 
-  // ✅ Calculate percentage per category
+  // Calculate percentage per category
   const categoryPercentages = categoryTotals.map((amount) =>
     totalSpent > 0 ? ((amount / totalSpent) * 100).toFixed(2) + "%" : "0%"
   );
@@ -53,28 +53,27 @@ const SpendingChart = ({ transactions }) => {
     ],
   };
 
-  // ✅ Refresh Page
+  // Refresh Page
   const refreshPage = () => {
     window.location.reload();
   };
 
   return (
     <Card className="p-4 mt-3 shadow-sm rounded">
-      {/* ✅ Title with Refresh Button on the Right */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">📊 Spending Trends</h2>
         <Button variant="outline-secondary" size="sm" onClick={refreshPage} title="Refresh">
-          <i className="bi bi-arrow-clockwise"></i> {/* Bootstrap refresh icon */}
+          <i className="bi bi-arrow-clockwise"></i> 
         </Button>
       </div>
-
+      
       <Bar data={data} />
-
-      {/* ✅ Responsive Spending Table with Horizontal Scroll */}
+      {/*percentage table*/}
       <div className="responsive-table mt-4">
         <Table striped bordered hover className="text-center align-middle">
           <thead className="table-primary">
             <tr>
+              {/*iterate through all the categorys*/}
               {categories.map((category, index) => (
                 <th key={index}>{category}</th>
               ))}
@@ -89,37 +88,38 @@ const SpendingChart = ({ transactions }) => {
           </tbody>
         </Table>
       </div>
+      
+      {/*iterate through all the categorys*/}
 
-      {/* ✅ CSS for Responsive Table with Smooth Scroll */}
       <style>
         {`
           .responsive-table {
-            overflow-x: auto;              /* ✅ Enable horizontal scrolling */
+            overflow-x: auto;              
           }
 
           .responsive-table table {
             width: 100%;
-            min-width: 600px;              /* ✅ Minimum width before scroll */
-            transition: width 0.3s ease;   /* ✅ Smooth resizing */
+            min-width: 600px;              
+            transition: width 0.3s ease;   
           }
 
           @media (max-width: 992px) {
             .responsive-table table {
-              width: 90% !important;       /* ✅ Shrinks on medium screens */
+              width: 90% !important;       
               font-size: 0.9rem;
             }
           }
 
           @media (max-width: 768px) {
             .responsive-table table {
-              width: 80% !important;       /* ✅ Shrinks further on tablets */
+              width: 80% !important;       
               font-size: 0.85rem;
             }
           }
 
           @media (max-width: 576px) {
             .responsive-table table {
-              width: 100% !important;      /* ✅ Full width on mobile */
+              width: 100% !important;      
               min-width: 400px;
               font-size: 0.75rem;
             }

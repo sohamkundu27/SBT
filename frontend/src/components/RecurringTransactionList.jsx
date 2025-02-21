@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button } from "react-bootstrap";
-import axios from "axios";
+import axios from "axios"; // use for api calls
 import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap Icons
 
 const RecurringTransactionList = () => {
   const [recurringTransactions, setRecurringTransactions] = useState([]);
 
-  // ✅ Fetch Recurring Transactions on Component Mount
-  useEffect(() => {
+  // Fetch Recurring Transactions from the DB
+    useEffect(() => {
     fetchRecurringTransactions();
   }, []);
 
@@ -19,38 +19,37 @@ const RecurringTransactionList = () => {
         id: txn.id || Date.now() + Math.random(), // Ensure unique ID
       }));
       setRecurringTransactions(transactionsWithIds);
-      console.log("📥 Recurring Transactions loaded:", transactionsWithIds);
+      console.log("Recurring Transactions loaded:", transactionsWithIds);
     } catch (error) {
-      console.error("❌ Error fetching recurring transactions:", error);
+      console.error("Error fetching recurring transactions:", error);
     }
   };
 
-  // ✅ Delete Recurring Transaction
+  // Delete Recurring Transaction
   const deleteRecurringTransaction = async (id) => {
     try {
       const form = new FormData();
       form.append("id", id);
 
       await axios.post("http://localhost:5054/api/recurring/delete", form);
+      //find the correct id to remove with filter
       setRecurringTransactions((prev) => prev.filter((txn) => txn.id !== id));
-      console.log(`✅ Deleted recurring transaction with ID: ${id}`);
+      console.log(`Deleted recurring transaction with ID: ${id}`);
     } catch (error) {
-      console.error("❌ Error deleting recurring transaction:", error);
+      console.error("Error deleting recurring transaction:", error);
     }
   };
 
-  // ✅ Refresh Page
   const refreshPage = () => {
     window.location.reload();
   };
 
   return (
     <div className="card p-4 mt-3">
-      {/* ✅ Title with Refresh Button on the Right */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">Recurring Transactions</h2>
         <Button variant="outline-secondary" size="sm" onClick={refreshPage} title="Refresh">
-          <i className="bi bi-arrow-clockwise"></i> {/* Bootstrap refresh icon */}
+          <i className="bi bi-arrow-clockwise"></i> 
         </Button>
       </div>
 
@@ -72,6 +71,7 @@ const RecurringTransactionList = () => {
             </tr>
           ) : (
             recurringTransactions.map((txn) => (
+              //iterate through recurringTransactions and display them all 
               <tr key={txn.id}>
                 <td>{txn.description}</td>
                 <td>${txn.amount.toFixed(2)}</td>

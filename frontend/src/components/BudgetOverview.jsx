@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, Accordion, Form, Button, Alert, Row, Col } from "react-bootstrap";
-import axios from "axios";
+import axios from "axios"; //use this for apis
 
 const BudgetOverview = ({ transactions }) => {
   const categories = ["Groceries", "Dining", "Entertainment", "Rent", "Utilities", "Other"];
@@ -10,7 +10,7 @@ const BudgetOverview = ({ transactions }) => {
   const [isDisabled, setIsDisabled] = useState({});
   const [overspendingAlerts, setOverspendingAlerts] = useState([]);
 
-  // ✅ Fetch budgets from the database on page load
+  // Fetch budgets from the database on page load
   useEffect(() => {
     fetchBudgets();
   }, []);
@@ -19,7 +19,7 @@ const BudgetOverview = ({ transactions }) => {
     try {
       const response = await axios.get("http://localhost:5054/api/budget/get-all");
       const budgets = response.data;
-
+      //formats them into javascript object
       const budgetMap = categories.reduce((acc, category) => {
         const matchingBudget = budgets.find((b) => b.category === category);
         acc[category] = matchingBudget ? matchingBudget.amount : 100; // Default to 100 if not set
@@ -28,6 +28,8 @@ const BudgetOverview = ({ transactions }) => {
 
       setCategoryBudgets(budgetMap);
       setInputValues(budgetMap);
+      //iterates over all categories, decides whehter it should be disabled or not. if the budget is 0 then enable it
+      //!! converts the value to a boolean. ...acc is an accumulator, it collects all the values
       setIsDisabled(
         categories.reduce((acc, category) => ({ ...acc, [category]: !!budgetMap[category] }), {})
       );
@@ -36,8 +38,10 @@ const BudgetOverview = ({ transactions }) => {
     }
   };
 
-  // ✅ Calculate total spending per category
+  // Calculate total spending per category
   const categorySpending = categories.reduce((acc, category) => {
+    //txn is each transaction, we are getting the value of each and adding them together
+    //we are returning one value with reduce, adding all the value repeatedly
     acc[category] = transactions
       .filter((txn) => txn.category === category)
       .reduce((sum, txn) => sum + parseFloat(txn.amount), 0);
@@ -48,7 +52,7 @@ const BudgetOverview = ({ transactions }) => {
     setInputValues({ ...inputValues, [category]: parseFloat(value) || 0 });
   };
 
-  // ✅ Update budget in database and disable input field
+  // Update budget in database and disable input field
   const handleSetBudget = async (category) => {
     try {
         const amount = inputValues[category];
@@ -57,14 +61,14 @@ const BudgetOverview = ({ transactions }) => {
 
         await axios.post(
             "http://localhost:5054/api/budget/update",
-            JSON.stringify({ category, amount }), // ✅ Send JSON
+            JSON.stringify({ category, amount }), // Send JSON to the api
             {
                 headers: {
-                    "Content-Type": "application/json", // ✅ Explicitly set content type
+                    "Content-Type": "application/json", // set content type
                 },
             }
         );
-
+        //update all the state variables
         setCategoryBudgets({ ...categoryBudgets, [category]: amount });
         setIsDisabled({ ...isDisabled, [category]: true });
 
@@ -80,14 +84,14 @@ const handleResetBudget = async (category) => {
 
         await axios.post(
             "http://localhost:5054/api/budget/update",
-            JSON.stringify({ category, amount: 0 }), // ✅ Reset amount to 0
+            JSON.stringify({ category, amount: 0 }), // Reset amount to 0
             {
                 headers: {
-                    "Content-Type": "application/json", // ✅ Explicitly set content type
+                    "Content-Type": "application/json", // set content type
                 },
             }
         );
-
+        // update all state variables accordingly
         setCategoryBudgets({ ...categoryBudgets, [category]: 0 });
         setInputValues({ ...inputValues, [category]: 0 });
         setIsDisabled({ ...isDisabled, [category]: false });

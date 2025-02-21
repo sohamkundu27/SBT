@@ -54,22 +54,20 @@ const TransactionList = ({ transactions, onDeleteTransaction }) => {
 
   return (
     <div className="card p-4 mt-3">
-      {/* ✅ Title with Refresh Button on the Right */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">Transaction History</h2>
         <Button variant="outline-secondary" size="sm" onClick={refreshPage} title="Refresh">
-          <i className="bi bi-arrow-clockwise"></i> {/* Bootstrap refresh icon */}
+          <i className="bi bi-arrow-clockwise"></i> 
         </Button>
       </div>
 
-      {/* ✅ Centered Export Buttons */}
       <div className="mb-3 d-flex justify-content-center gap-2">
         <Button variant="success" size="sm" onClick={exportToCSV}>Export CSV</Button>
         <Button variant="info" size="sm" onClick={exportToJSON}>Export JSON</Button>
         <Button variant="primary" size="sm" onClick={exportToPDF}>Export PDF</Button>
       </div>
 
-      {/* ✅ Responsive Table */}
+      {/* responsive Table */}
       <div style={{ overflowX: "auto" }}>
         <Table striped bordered hover>
           <thead>

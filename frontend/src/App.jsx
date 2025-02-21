@@ -8,11 +8,11 @@ import RecurringTransactionList from "./components/RecurringTransactionList";
 import axios from "axios";
 
 const App = () => {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState([]); //arrays of all transactions
   const [recurringTransactions, setRecurringTransactions] = useState([]);
   const [budget, setBudget] = useState(1000); // Default budget
 
-  // ✅ Fetch transactions and recurring transactions when the app first loads
+  // Fetch transactions and recurring transactions when the app first loads
   useEffect(() => {
     fetchAllData();
     fetchBudgets();
@@ -23,35 +23,35 @@ const App = () => {
     await fetchRecurringTransactions();
   };
 
-  // ✅ Fetch Regular Transactions
+  // Fetch Regular Transactions
   const fetchTransactions = async () => {
     try {
       const response = await axios.get("http://localhost:5054/api/get-all");
 
       if (!Array.isArray(response.data)) {
-        console.error("❌ API did not return an array:", response.data);
+        console.error("API did not return an array:", response.data);
         return;
       }
 
-      setTransactions(response.data); // ✅ Overwrite instead of appending duplicates
-      console.log("📥 Transactions loaded:", response.data);
+      setTransactions(response.data); // Overwrite instead of adding duplicates
+      console.log("Transactions loaded:", response.data);
     } catch (error) {
-      console.error("❌ Error fetching transactions:", error);
+      console.error("Error fetching transactions:", error);
     }
   };
 
-  // ✅ Fetch Recurring Transactions
+  //Fetch Recurring Transactions
   const fetchRecurringTransactions = async () => {
     try {
       const response = await axios.get("http://localhost:5054/api/recurring/get-all");
       setRecurringTransactions(response.data);
-      console.log("📥 Recurring Transactions loaded:", response.data);
+      console.log("Recurring Transactions loaded:", response.data);
     } catch (error) {
-      console.error("❌ Error fetching recurring transactions:", error);
+      console.error("Error fetching recurring transactions:", error);
     }
   };
 
-  // ✅ Add a New Transaction (Using FormData)
+  // Add a New Transaction using FormData
   const addTransaction = async (transaction) => {
     try {
         const form = new FormData();
@@ -65,76 +65,78 @@ const App = () => {
             ? "http://localhost:5054/api/recurring/add"
             : "http://localhost:5054/api/add";
 
-        // ✅ Add the new transaction
+        //Add the new transaction
         await axios.post(apiEndpoint, form);
-        console.log("✅ Transaction added:", transaction);
+        console.log("Transaction added:", transaction);
 
-        // ✅ Fetch updated transactions
+        // Fetch updated transactions
         const response = await axios.get("http://localhost:5054/api/get-all");
         const transactions = response.data;
 
         if (transactions.length > 1) {
-            // ✅ Get the most recent transaction (assuming last one is newest)
+            // Get the most recent transaction (assuming last one is newest)
+            //logic if there's a duplicate
             const mostRecentTransaction = transactions[transactions.length - 2]; // Get second-last (since last is the new one)
 
-            console.log("🛑 Attempting to delete duplicate:", mostRecentTransaction);
+            console.log("Attempting to delete duplicate:", mostRecentTransaction);
 
-            // ✅ Delete the most recent transaction using the existing function
+            // Delete the most recent transaction using the existing function
             await deleteTransaction(mostRecentTransaction.id);
 
-            console.log("🗑️ Deleted duplicate transaction:", mostRecentTransaction);
+            console.log("Deleted duplicate transaction:", mostRecentTransaction);
         }
 
-        window.location.reload(); // ✅ Refresh page after changes
+        window.location.reload(); // refresh
     } catch (error) {
-        console.error("❌ Error adding or deleting transaction:", error);
+        console.error("Error adding or deleting transaction:", error);
     }
 };
 
 
-  // ✅ Delete a Transaction (Using FormData)
+  // Delete a Transaction using FormData
+  // Formdata packages the data before sending it to axios
   const deleteTransaction = async (id) => {
     try {
       const form = new FormData();
       form.append("id", id);
 
       await axios.post("http://localhost:5054/api/delete", form);
-      window.location.reload(); // ✅ Refresh the page after deleting
+      window.location.reload(); // Refresh the page after deleting
     } catch (error) {
-      console.error("❌ Error deleting transaction:", error);
+      console.error("Error deleting transaction:", error);
     }
   };
 
-  // ✅ Delete Recurring Transaction (Using FormData)
+  // Delete Recurring Transaction using FormData
   const deleteRecurringTransaction = async (id) => {
     try {
       const form = new FormData();
       form.append("id", id);
 
       await axios.post("http://localhost:5054/api/recurring/delete", form);
-      window.location.reload(); // ✅ Refresh the page after deleting
+      window.location.reload(); // Refresh the page after deleting
     } catch (error) {
-      console.error("❌ Error deleting recurring transaction:", error);
+      console.error(" Error deleting recurring transaction:", error);
     }
   };
 
-  // ✅ Delete All Transactions (Resets State Properly)
+  // Delete All Transactions and reset state properly
   const deleteAllTransactions = () => {
     setTransactions([]);
     setRecurringTransactions([]);
-    window.location.reload(); // ✅ Refresh the page after deleting all
+    window.location.reload(); // Refresh the page after deleting all
   };
   const fetchBudgets = async () => {
     try {
         const response = await axios.get("http://localhost:5054/api/budgets/get-all");
         setBudgets(response.data);
-        console.log("📥 Budgets loaded:", response.data);
+        console.log("Budgets loaded:", response.data);
     } catch (error) {
-        console.error("❌ Error fetching budgets:", error);
+        console.error("Error fetching budgets:", error);
     }
 };
 
-  // ✅ Merge Regular and Recurring Transactions for Overview & Chart
+  // Merge Regular and Recurring Transactions for Overview & Chart
   const allTransactions = [...transactions, ...recurringTransactions];
 
   return (
@@ -142,7 +144,7 @@ const App = () => {
       <h1 className="text-center mb-4">Smart Budget Tracker</h1>
 
       <div className="mb-3">
-        <BudgetOverview budget={budget} transactions={allTransactions} /> {/* ✅ Merged Transactions */}
+        <BudgetOverview budget={budget} transactions={allTransactions} /> {/* Merged Transactions for the overview and chart*/}
       </div>
 
       <div className="mb-3">
@@ -168,7 +170,7 @@ const App = () => {
       </div>
 
       <div className="mb-3">
-        <SpendingChart transactions={allTransactions} /> {/* ✅ Merged Transactions */}
+        <SpendingChart transactions={allTransactions} /> {/*merged transactions */}
       </div>
     </Container>
   );
