@@ -5,7 +5,7 @@ using backend.Database;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration; // ✅ Required for config
+using Microsoft.Extensions.Configuration; // Required for config
 
 namespace backend.Controllers
 {
@@ -15,13 +15,13 @@ namespace backend.Controllers
     public class BudgetController : ControllerBase
     {
         private readonly AppDBContext db;
-        private readonly APICall apiCall; // ✅ Added APICall instance
+        private readonly APICall apiCall; // APICall instance
 
-        // ✅ Inject DB Context & Configuration
+        // DB Context & Configuration
         public BudgetController(AppDBContext context, IConfiguration configuration)
         {
             db = context;
-            apiCall = new APICall(configuration); // ✅ Initialize APICall with API Key
+            apiCall = new APICall(configuration); // Initialize APICall with API Key
         }
 
         //gets everything from the DB
@@ -37,7 +37,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error fetching transactions: {ex.Message}");
+                Console.WriteLine($"Error fetching transactions: {ex.Message}");
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
@@ -68,13 +68,13 @@ namespace backend.Controllers
                 db.Transactions.Add(newTransaction);
                 await db.SaveChangesAsync();
 
-                Console.WriteLine($"✅ Added new transaction with ID: {newTransaction.Id}");
+                Console.WriteLine($"Added new transaction with ID: {newTransaction.Id}");
                 //returning it as JSON
                 return Ok(newTransaction);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error adding transaction: {ex.Message}");
+                Console.WriteLine($"Error adding transaction: {ex.Message}");
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
@@ -94,13 +94,13 @@ namespace backend.Controllers
                 db.Transactions.Remove(transaction);
                 await db.SaveChangesAsync();
 
-                Console.WriteLine($"✅ Deleted transaction with ID: {id}");
+                Console.WriteLine($"Deleted transaction with ID: {id}");
                 //returning it as JSON
                 return Ok(new { message = $"Transaction with ID {id} deleted." });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error deleting transaction: {ex.Message}");
+                Console.WriteLine($"Error deleting transaction: {ex.Message}");
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }

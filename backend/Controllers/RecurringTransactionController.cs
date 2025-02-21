@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration; // ✅ Required for config
+using Microsoft.Extensions.Configuration; // Required for config
 
 namespace backend.Controllers
 {
@@ -16,13 +16,13 @@ namespace backend.Controllers
     public class RecurringTransactionController : ControllerBase
     {
         private readonly AppDBContext db;
-        private readonly APICall apiCall; // ✅ Added APICall instance
+        private readonly APICall apiCall; // APICall instance
 
-        // ✅ Inject DB Context & Configuration
+        // DB Context and Configuration
         public RecurringTransactionController(AppDBContext context, IConfiguration configuration)
         {
             db = context;
-            apiCall = new APICall(configuration); // ✅ Initialize APICall with API Key
+            apiCall = new APICall(configuration); // Initialize APICall with API Key
         }
 
         // Http get to fetch all recurring transactions from the DB
@@ -85,7 +85,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error adding recurring transaction: {ex.Message}");
+                Console.WriteLine($"Error adding recurring transaction: {ex.Message}");
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
@@ -104,13 +104,13 @@ namespace backend.Controllers
 
                 db.RecurringTransactions.Remove(transaction);
                 await db.SaveChangesAsync();
-
+                //need this so we can return the latest data to the frontend
                 var updatedList = await db.RecurringTransactions.OrderBy(t => t.Id).ToListAsync();
                 return Ok(updatedList);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error deleting recurring transaction: {ex.Message}");
+                Console.WriteLine($"Error deleting recurring transaction: {ex.Message}");
                 return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
         }
