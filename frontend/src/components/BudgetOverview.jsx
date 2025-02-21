@@ -34,7 +34,7 @@ const BudgetOverview = ({ transactions }) => {
         categories.reduce((acc, category) => ({ ...acc, [category]: !!budgetMap[category] }), {})
       );
     } catch (error) {
-      console.error("❌ Error fetching budgets:", error);
+      console.error(" Error fetching budgets:", error);
     }
   };
 
@@ -74,7 +74,7 @@ const BudgetOverview = ({ transactions }) => {
 
         console.log(`✅ Budget updated for ${category}: $${amount}`);
     } catch (error) {
-        console.error("❌ Error updating budget:", error);
+        console.error("Error updating budget:", error);
     }
 };
 
@@ -98,7 +98,7 @@ const handleResetBudget = async (category) => {
 
         console.log(`✅ Budget reset for ${category}`);
     } catch (error) {
-        console.error("❌ Error resetting budget:", error);
+        console.error(" Error resetting budget:", error);
     }
 };
 

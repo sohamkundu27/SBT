@@ -112,7 +112,7 @@ const App = () => {
     try {
       const form = new FormData();
       form.append("id", id);
-
+      
       await axios.post("http://localhost:5054/api/recurring/delete", form);
       window.location.reload(); // Refresh the page after deleting
     } catch (error) {
