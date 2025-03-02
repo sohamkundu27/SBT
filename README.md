@@ -1,6 +1,6 @@
 ### 📘 **Smart Budget Tracker (SBT)**
 
-A comprehensive **budget management** web application that helps users **track income and expenses**, **set budgets**, and **visualize spending trends**. Built with **C# .NET Core**, **React**, and **SQL**, this project aligns with the **tech stack used at Xorbix Technologies** and serves as a full-stack development demonstration.
+A comprehensive **budget management** web application that helps users **track income and expenses**, **set budgets**, and **visualize spending trends**. Built with **C# .NET Core**, **React**, and **SQL**.
 
 ---
 
