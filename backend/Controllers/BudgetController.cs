@@ -14,6 +14,7 @@ namespace backend.Controllers
     //We inherit the HTTP methods from the ControllerBase class. Make Budget Controller class to make all the methods in.
     public class BudgetController : ControllerBase
     {
+        //this the the local db
         private readonly AppDBContext db;
         private readonly APICall apiCall; // APICall instance
 
